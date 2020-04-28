@@ -239,18 +239,3 @@ def ternary_entropyf_4list(pP1_, pM1_):
     # Ht = sum(H)
     return Ht
 
-
-coverPath = ''
-stegoPath = ''
-
-for home, dirs, files in os.walk(coverPath):
-    for file in files:
-        if not file.startswith('.'):
-            imgpath = os.path.join(home, file)
-            print(imgpath)
-            img = misc.imread(imgpath)
-            if img.ndim == 3:
-                stego = S_UNIWARD(imgpath, 0.4)
-                stegoname = os.path.join(stegoPath, file)
-                misc.imsave(stegoname, stego)
-                #misc.imsave(stegoname, stego-img)
