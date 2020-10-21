@@ -10,6 +10,8 @@ from numba import jit
 import cv2
 import scipy.misc
 
+np.set_printoptions(threshold=np.inf)
+
 def S_UNIWARD(coverPath, payload):
     sgm = 1
     ## Get 2D wavelet filters - Daubechies 8
@@ -80,9 +82,15 @@ def S_UNIWARD(coverPath, payload):
     for i in range(len(a)):
         rho[a[i], b[i]] = wetCost  # if all xi{} are zero threshold the cost
 
-    k, k_ = rho.shape
-    rhoP1 = np.zeros((k, k_, 3))
-    rhoM1 = np.zeros((k, k_, 3))
+    #k, k_ = rho.shape
+    rhoP1 = np.zeros((k, l, 3))
+    rhoM1 = np.zeros((k, l, 3))
+
+
+    for i in range(3):
+        rhoP1[:,:,i] = rho
+        rhoM1[:,:,i] = rho
+ 
     #a, b, c = np.where(cover - 255.0 <= 0.1)
     a, b, c = np.where(cover == 255)
 
@@ -94,9 +102,12 @@ def S_UNIWARD(coverPath, payload):
     for i in range(len(a)):
         rhoM1[a[i], b[i], c[i]] = wetCost  # do not embed -1 if the pixel has min value
 
-    ## Embedding simulator
+    
+    ## Embedding simulator ##
     cover_len = len(cover[:, :, 0]) * len(cover[:, :, 0])
     stego = cover
+
+    print(rhoP1)
 
     for i in range(3):
         stego[:, :, i] = EmbeddingSimulator_singel(cover[:, :, i], rhoP1[:, :, i], rhoM1[:, :, i], payload * cover_len,
@@ -238,4 +249,27 @@ def ternary_entropyf_4list(pP1_, pM1_):
 
     # Ht = sum(H)
     return Ht
+
+
+coverPath = './sample'
+stegoPath = './stego'
+
+for home, dirs, files in os.walk(coverPath):
+    for file in files:
+        if not file.startswith('.'):
+            imgpath = os.path.join(home, file)
+            print(imgpath)
+            #img = misc.imread(imgpath)
+            img = Image.open(imgpath)
+            #if img.ndim == 3:
+            if len(img.split())== 3:
+                stego = S_UNIWARD(imgpath, 0.4)
+                stegoname = os.path.join(stegoPath, file)
+                misc.imsave(stegoname, stego)
+                #misc.imsave(stegoname, stego-img)
+                plt.subplot(121)
+                plt.imshow(img)
+                plt.subplot(122)
+                plt.imshow(stego)
+                plt.show()
 
